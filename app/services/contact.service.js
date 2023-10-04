@@ -1,11 +1,12 @@
-const { ObjectID, ObjectId } = require("mongodb");
+const { ObjectId } = require("mongodb");
 
 class ContactService {
     constructor(client){
-        this.Contact = client.db().colection("contacts");
+        this.Contact = client.db().collection("contacts");
     }
 
     extractConactData(payload){
+      //  console.log("paylod " + payload.name);
         const contact = {
             name: payload.name,
             email: payload.email,
@@ -13,14 +14,18 @@ class ContactService {
             phone: payload.phone,
             favorite: payload.favorite,
         };
+       // console.log("paylod contactextract " + contact);
         Object.keys(contact).forEach(
-            (key) => contact[key] === undefined && delete contact[key]
+            (key) => { 
+               // console.log("paylod contactextract 1 " + key + contact[key]);
+                contact[key] === undefined && delete contact[key] }
         );
         return contact;
     }
 
     async create(payload){
         const contact = this.extractConactData(payload);
+        console.log("create contact " + contact);
         const result = await this.Contact.findOneAndUpdate(
             contact,
             {   $set: {favorite: contact.favorite === true}},
@@ -28,10 +33,12 @@ class ContactService {
         );
         return result.value;
     }
+
     async find(filter){
         const cursor = await this.Contact.find(filter);
         return await cursor.toArray();
     }
+
     async findByName(name){
         return await this.find({
             name: {
@@ -40,26 +47,36 @@ class ContactService {
         });
     }
     async findById(id){
+        console.log("goi ham findById " +id);
         return await this.Contact.findOne({
             _id: ObjectId.isValid(id) ? new ObjectId(id): null
         });
     }
     async update(id, payload){
+        console.log(id);
         const filter = {
             _id: ObjectId.isValid(id) ? new ObjectId(id): null,
         };
+        console.log("fileder" + filter);
         const update = this.extractConactData(payload);
+        console.log(update);
         const result = await this.Contact.findOneAndUpdate(
-            filter, { $set: update}, {returnDocument: "after"}
+            filter, 
+            { $set: update}, 
+            {returnDocument: "after"}
         );
-        return result.value;
+        console.log(result);
+        return result;
     }
     async delete(id){
-       const result = await this.Contact.findOneAndUpdate({
+        console.log('goi ham delete conver  ' + id);
+       const result = await this.Contact.findOneAndDelete({
         _id: ObjectId.isValid(id) ? new ObjectId(id): null,
        });
-       return result.value;
+       console.log("resu " +result);
+       return result;
     }
+
     async findFavorite (){
          return await this.find({
             favorite: true

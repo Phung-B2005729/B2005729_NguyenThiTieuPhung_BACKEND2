@@ -6,10 +6,12 @@ exports.create = async (req, res, next) => {
   if(!req.body?.name){
     return next(new ApiError(400,"Name can not be empty"));
   }
+ // console.log("body "+ req.body);
 
   try{
     const contactService = new ContactService(MongoDB.client);
-    const document = await ContactService.create(req.body);
+  //  console.log(MongoDB.client);
+    const document = await contactService.create(req.body);
     return res.send(document);
   }catch(err){
     return next(new ApiError(500, "An error ocurred while creating the contact"));
@@ -37,6 +39,7 @@ return res.send(document);
 };
 
 exports.findOne = async (req,res, next) => {
+    
    try{
     const contactService = new ContactService(MongoDB.client);
     const document = await contactService.findById(req.params.id);
@@ -55,6 +58,7 @@ exports.update = async (req,res, next) => {
    }
    try{
     const contactService = new ContactService(MongoDB.client);
+    console.log("goi ham update " + req.params.id + " " + req.body);
     const document = await contactService.update(req.params.id, req.body);
     if(!document){
         return next(new ApiError(404,"Contact not found"));
@@ -68,9 +72,12 @@ exports.update = async (req,res, next) => {
 };
 
 exports.delete = async (req,res, next) => {
+  
     try{
         const contactService = new ContactService(MongoDB.client);
+       
         const document = await contactService.delete(req.params.id);
+       
         if(!document){
             return next(new ApiError(404, "Contact not found"));
         }
@@ -92,10 +99,13 @@ exports.findAllFavorite = async (_req,res, next) => {
     }
 }
 exports.deleteAll = async (_req, res, next) => {
+    console.log('goi ham delete');
    try {
     const contactService = new ContactService(MongoDB.client);
+    console.log("contactsever " + contactService);
     const deleteCount = await contactService.deleteAll();
-    return res,send({
+    console.log('documentConut ' + deleteCount);
+    return res.send({
         message: `${deleteCount} contact were deleted successfully`
     });
    } catch(err){
